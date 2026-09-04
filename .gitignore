@@ -1,0 +1,14 @@
+# Credenciales y secretos (NO subir a git)
+.env
+
+# Entornos virtuales
+venv/
+.venv/
+
+# Cachés de Python
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Secretos de herramientas de análisis
+resultado_bandit.txt

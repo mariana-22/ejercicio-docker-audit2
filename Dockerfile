@@ -1,9 +1,10 @@
-FROM python:3.8
+FROM python:3.9
 WORKDIR /app
 
-COPY . /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-RUN pip install Flask==1.1.2 PyMySQL==0.9.3
+COPY . /app
 
 EXPOSE 5050
 CMD ["python", "app.py"]

@@ -1,0 +1,12 @@
+.git
+.env
+venv/
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.gitignore
+Dockerfile
+docker-compose.yml
+.github/
+init.sql

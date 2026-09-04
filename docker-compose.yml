@@ -1,0 +1,44 @@
+version: "3.8"
+
+services:
+  web:
+    build: .
+    container_name: apilegacy-web
+    ports:
+      - "5050:5050"
+    environment:
+      DB_HOST: db
+      DB_USER: root
+      DB_PASS: ${DB_PASS:-secreto_por_defecto}
+      DB_NAME: legacydb
+      FLASK_DEBUG: "false"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - red_auditoria
+
+  db:
+    image: mysql:8.0
+    container_name: apilegacy-db
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASS:-secreto_por_defecto}
+      MYSQL_DATABASE: legacydb
+    ports:
+      - "3306:3306"
+    volumes:
+      - volumen_mysql:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${DB_PASS:-secreto_por_defecto}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - red_auditoria
+
+volumes:
+  volumen_mysql:
+
+networks:
+  red_auditoria:
