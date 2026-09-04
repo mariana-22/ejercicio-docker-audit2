@@ -12,6 +12,7 @@ RUN apt-get update \
 
 # Copiar e instalar dependencias de Python
 COPY requirements.txt .
+RUN pip install --no-cache-dir --upgrade pip setuptools
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copiar código y ejecutar como usuario no root

@@ -47,4 +47,6 @@ jobs:
           format: table
           exit-code: '1'
           severity: CRITICAL,HIGH
-          extra-args: --ignorefile .trivyignore --pkg-types library
+          scanners: vuln
+          vuln-type: library
+          trivyignores: .trivyignore
