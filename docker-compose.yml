@@ -1,8 +1,9 @@
 version: "3.8"
 
 services:
-  web:
+  app-backend:
     build: .
+    image: mariana220308/sample-api:v1
     container_name: apilegacy-web
     ports:
       - "5050:5050"

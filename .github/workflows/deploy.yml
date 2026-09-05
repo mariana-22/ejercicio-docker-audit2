@@ -43,11 +43,11 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Construir imagen
+      - name: Construir y subir imagen a Docker Hub
         uses: docker/build-push-action@v6
         with:
           context: .
-          push: false
+          push: true
           load: true
           no-cache: true
           tags: mariana220308/sample-api:v1
@@ -64,16 +64,21 @@ jobs:
           scanners: vuln
           trivyignores: .trivyignore
 
-      - name: Subir la imagen a Docker Hub
-        run: docker push mariana220308/sample-api:v1
-
       - name: Desplegar en servidor cloud
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.SERVER_HOST}}
-          username: ${{ secrets.SERVER_USER}}
-          key: ${{ secrets.SERVER_SSH_KEY}}
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
+            # Clonar el repo si la carpeta no existe
+            if [ ! -d ~/ejercicio_docker-audit2-web ]; then
+              git clone https://github.com/mariana-22/ejercicio-docker-audit2.git ~/ejercicio_docker-audit2-web
+            fi
+            # Instalar docker compose plugin si no está disponible
+            if ! docker compose version >/dev/null 2>&1; then
+              sudo apt-get update && sudo apt-get install -y docker-compose-plugin
+            fi
             cd ~/ejercicio_docker-audit2-web
             docker compose pull app-backend
             docker compose up -d
