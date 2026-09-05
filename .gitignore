@@ -1,5 +1,7 @@
 # Credenciales y secretos (NO subir a git)
 .env
+*.pem
+*.key
 
 # Entornos virtuales
 venv/
@@ -12,3 +14,4 @@ __pycache__/
 
 # Secretos de herramientas de análisis
 resultado_bandit.txt
+
