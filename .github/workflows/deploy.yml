@@ -82,6 +82,6 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
-            cd ~/docker_flask_desplegado
+            cd ~/ejercicio_docker
             docker compose pull app-backend
             docker compose up -d
