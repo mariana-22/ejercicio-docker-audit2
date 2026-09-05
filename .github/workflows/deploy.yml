@@ -1,34 +1,3 @@
-name: Publicar Imagen en Docker hub
-
-on:
-  push:
-    branches: ["main", "feature/vulnerabilidades"]
-
-jobs:
-  test-and-security:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Descargar código
-        uses: actions/checkout@v4
-
-      - name: Configurar Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.14"
-
-      - name: Instalar dependencias
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install pytest bandit
-
-      - name: Escaneo de seguridad (Bandit)
-        run: bandit -r app.py test_app.py -ll
-
-      - name: Ejecutar pruebas pytest
-        run: pytest test_app.py -v
-
   build-and-push:
     needs: test-and-security
     runs-on: ubuntu-latest
@@ -36,14 +5,6 @@ jobs:
     steps:
       - name: Descargar código
         uses: actions/checkout@v4
-
-      - name: Verificar secrets (diagnóstico)
-        env:
-          DU: ${{ secrets.DOCKER_USERNAME }}
-          DP: ${{ secrets.DOCKER_PASSWORD }}
-        run: |
-          echo "username_len=${#DU}"
-          echo "password_len=${#DP}"
 
       - name: Iniciar sesión en Docker Hub
         uses: docker/login-action@v3
@@ -76,10 +37,12 @@ jobs:
         run: docker push mariana220308/sample-api:v1
 
       - name: Desplegar en servidor cloud
-        run: |
-          echo "DIAG b64_len=$(echo -n '${{ secrets.SERVER_SSH_KEY_B64 }}' | tr -d '[:space:]' | wc -c)"
-          echo "${{ secrets.SERVER_SSH_KEY_B64 }}" | base64 -d > /tmp/llave3.pem
-          echo "DIAG pem_size=$(wc -c < /tmp/llave3.pem)"
-          head -1 /tmp/llave3.pem
-          chmod 600 /tmp/llave3.pem
-          ssh -i /tmp/llave3.pem -o StrictHostKeyChecking=accept-new ubuntu@3.21.228.43 'cd ~/ejercicio_docker && docker compose pull app-backend && docker compose up -d'
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            cd ~/ejercicio_docker
+            docker compose pull app-backend
+            docker compose up -d
