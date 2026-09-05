@@ -75,18 +75,8 @@ jobs:
       - name: Subir la imagen a Docker Hub
         run: docker push mariana220308/sample-api:v1
 
-      - name: Preparar llave SSH
-        run: |
-          echo "${{ secrets.SERVER_SSH_KEY_B64 }}" | base64 -d > "$GITHUB_WORKSPACE/llave3.pem"
-          chmod 600 "$GITHUB_WORKSPACE/llave3.pem"
-
       - name: Desplegar en servidor cloud
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: "3.21.228.43"
-          username: "ubuntu"
-          key_path: /github/workspace/llave3.pem
-          script: |
-            cd ~/ejercicio_docker
-            docker compose pull app-backend
-            docker compose up -d
+        run: |
+          echo "${{ secrets.SERVER_SSH_KEY_B64 }}" | base64 -d > /tmp/llave3.pem
+          chmod 600 /tmp/llave3.pem
+          ssh -i /tmp/llave3.pem -o StrictHostKeyChecking=accept-new ubuntu@3.21.228.43 'cd ~/ejercicio_docker && docker compose pull app-backend && docker compose up -d'
