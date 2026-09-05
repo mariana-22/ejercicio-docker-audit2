@@ -3,6 +3,12 @@ name: Publicar Imagen en Docker hub
 on:
   push:
     branches: ["main", "feature/vulnerabilidades"]
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Branch to deploy'
+        required: false
+        default: 'main'
 
 jobs:
   test-and-security:
@@ -71,14 +77,24 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
-            # Clonar el repo si la carpeta no existe
+            set -e
+            echo "=== Paso 1: Verificar/instalar git ==="
+            which git || (sudo apt-get update && sudo apt-get install -y git)
+            echo "=== Paso 2: Clonar repo si no existe ==="
             if [ ! -d ~/ejercicio_docker-audit2-web ]; then
+              echo "Clonando repositorio..."
               git clone https://github.com/mariana-22/ejercicio-docker-audit2.git ~/ejercicio_docker-audit2-web
+            else
+              echo "Carpeta ya existe, actualizando..."
+              cd ~/ejercicio_docker-audit2-web && git pull
             fi
-            # Instalar docker compose plugin si no está disponible
+            echo "=== Paso 3: Instalar docker compose plugin ==="
             if ! docker compose version >/dev/null 2>&1; then
+              echo "Instalando docker compose plugin..."
               sudo apt-get update && sudo apt-get install -y docker-compose-plugin
             fi
+            echo "=== Paso 4: Pull de imagen y deploy ==="
             cd ~/ejercicio_docker-audit2-web
             docker compose pull app-backend
             docker compose up -d
+            echo "=== Deploy completado ==="
