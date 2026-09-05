@@ -77,6 +77,9 @@ jobs:
 
       - name: Desplegar en servidor cloud
         run: |
+          echo "DIAG b64_len=$(echo -n '${{ secrets.SERVER_SSH_KEY_B64 }}' | tr -d '[:space:]' | wc -c)"
           echo "${{ secrets.SERVER_SSH_KEY_B64 }}" | base64 -d > /tmp/llave3.pem
+          echo "DIAG pem_size=$(wc -c < /tmp/llave3.pem)"
+          head -1 /tmp/llave3.pem
           chmod 600 /tmp/llave3.pem
           ssh -i /tmp/llave3.pem -o StrictHostKeyChecking=accept-new ubuntu@3.21.228.43 'cd ~/ejercicio_docker && docker compose pull app-backend && docker compose up -d'
