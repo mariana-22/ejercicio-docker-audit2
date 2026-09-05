@@ -10,3 +10,5 @@ Dockerfile
 docker-compose.yml
 .github/
 init.sql
+npm_data/
+npm_letsencrypt/

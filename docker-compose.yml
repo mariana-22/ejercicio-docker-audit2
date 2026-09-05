@@ -1,32 +1,49 @@
-version: "3.8"
-
 services:
-  app-backend:
-    build: .
-    image: mariana220308/sample-api:v1
-    container_name: apilegacy-web
+  nginx-proxy-manager:
+    image: jc21/nginx-proxy-manager:latest
+    container_name: proxy-manager
+    restart: always
     ports:
-      - "5050:5050"
-    environment:
-      DB_HOST: db
-      DB_USER: root
-      DB_PASS: ${DB_PASS:-secreto_por_defecto}
-      DB_NAME: legacydb
-      FLASK_DEBUG: "false"
-    depends_on:
-      db:
-        condition: service_healthy
+      - "80:80"
+      - "81:81"
+      - "443:443"
+    volumes:
+      - ./npm_data:/data
+      - ./npm_letsencrypt:/etc/letsencrypt
+    networks:
+      - red_auditoria
+
+  uptime-kuma:
+    image: louislam/uptime-kuma:1
+    container_name: uptime-kuma
+    restart: always
+    expose:
+      - "3001"
+    volumes:
+      - uptime-kuma-data:/app/data
+    networks:
+      - red_auditoria
+
+  dozzle:
+    image: amir20/dozzle:latest
+    container_name: dozzle
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    expose:
+      - "8080"
     networks:
       - red_auditoria
 
   db:
     image: mysql:8.0
     container_name: apilegacy-db
+    restart: always
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_PASS:-secreto_por_defecto}
-      MYSQL_DATABASE: legacydb
-    ports:
-      - "3306:3306"
+      MYSQL_DATABASE: ${DB_NAME:-legacydb}
+    expose:
+      - "3306"
     volumes:
       - volumen_mysql:/var/lib/mysql
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
@@ -38,8 +55,29 @@ services:
     networks:
       - red_auditoria
 
+  app-backend:
+    build: .
+    image: mariana220308/sample-api:v1
+    container_name: apilegacy-web
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+    expose:
+      - "5050"
+    environment:
+      - DB_HOST=db
+      - DB_USER=root
+      - DB_PASS=${DB_PASS:-secreto_por_defecto}
+      - DB_NAME=${DB_NAME:-legacydb}
+      - FLASK_DEBUG=false
+    networks:
+      - red_auditoria
+
 volumes:
   volumen_mysql:
+  uptime-kuma-data:
 
 networks:
   red_auditoria:
+    name: red_auditoria

@@ -15,3 +15,7 @@ __pycache__/
 # Secretos de herramientas de análisis
 resultado_bandit.txt
 
+# Datos locales de Nginx Proxy Manager
+npm_data/
+npm_letsencrypt/
+
